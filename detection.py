@@ -127,10 +127,10 @@ def main():
 
             # Now work on the vertical portion
             if offset_y < 0:
-                msg = msg + "u"
+                msg = msg + "d"
                 offset_y = abs(offset_y)
             else:
-                msg = msg + "d"
+                msg = msg + "u"
             
             offset_string = str(offset_y)
             msg = msg + "0" * (3 - len(offset_string))
