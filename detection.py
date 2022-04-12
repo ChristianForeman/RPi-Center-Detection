@@ -11,8 +11,10 @@ import imutils
 #Globals:
 camera = PiCamera()
 
+# TODO: Tune these values to be more precise
 boundary = ([0,0,100], [75,75,225])
 
+# Set up the UART port
 ser = serial.Serial(
     port='/dev/ttyS0',
     baudrate=9600,
@@ -22,10 +24,12 @@ ser = serial.Serial(
     timeout=1000
 )
 
+# Take a photo, save as current img
 def takePhoto():
     camera.capture("currentImg.jpg")
     return cv2.imread("currentImg.jpg")
 
+# Calculate the midpoint between points
 def midpoint(pA, pB):
     return ((pA[0] + pB[0]) * 0.5, (pA[0] + pB[0]) * 0.5)
 
@@ -33,6 +37,7 @@ def detectImg(image, detectionPath, midpointPath):
     lower = np.array(boundary[0], dtype="uint8")
     upper = np.array(boundary[1], dtype="uint8")
 
+    # select pixels that are in the boundary
     mask = cv2.inRange(image, lower, upper)
     output = cv2.bitwise_and(image, image, mask=mask)
 
@@ -77,11 +82,10 @@ def detectImg(image, detectionPath, midpointPath):
     total_y = total_y / 4
 
     success = True
+    # If there are not 4 contours, we did not detect 4 corners
     if totalContours != 4:
         success = False
-        print("The 4 corners were not detected, resulting point is invalid")
         return success, 0, 0
-        # I should return here with some fake values
 
     # there should be a check that we saw exactly 4 midpoints (contours), if not, we must send an invalid photo message
 
@@ -116,10 +120,10 @@ def main():
         if success == True:
             # Add the bytes for the horizontal component
             if offset_x < 0:
-                msg = "r"
+                msg = "l"
                 offset_x = abs(offset_x)
             else:
-                msg = "l"
+                msg = "r"
             
             offset_string = str(offset_x)
             msg = msg + "0" * (3 - len(offset_string))
@@ -127,18 +131,19 @@ def main():
 
             # Now work on the vertical portion
             if offset_y < 0:
-                msg = msg + "d"
+                msg = msg + "u"
                 offset_y = abs(offset_y)
             else:
-                msg = msg + "u"
+                msg = msg + "d"
             
             offset_string = str(offset_y)
             msg = msg + "0" * (3 - len(offset_string))
             msg = msg + offset_string
+
+            print("photo", x, "is sending", msg)
+            uart_to_nucleo(msg)
         else:
-            msg = "00000000"
-        print("photo", x, "is sending", msg)
-        uart_to_nucleo(msg)
+            print("No image detected, not sending a message via UART")
 
         sleep(1)
     
