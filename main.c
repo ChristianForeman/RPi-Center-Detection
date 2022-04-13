@@ -18,7 +18,6 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "stdio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -57,8 +56,10 @@ TIM_HandleTypeDef htim4;
 int isNewMessage = 0; // is a 0 if no new message, is a 1 if there is a message to be processed
 uint8_t message[8];
 
-int SERVOMAX = 120;
-int SERVOMIN = 40;
+int SERVOMAXLEFT = 320;
+int SERVOMAXRIGHT = 180;
+int SERVOMAXUP = 300;
+int SERVOMAXDOWN = 340;
 
 /* USER CODE END PV */
 
@@ -146,6 +147,9 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  // These are balanced values
+  *tim4_ccr3 = 320;
+  *tim4_ccr4 = 250;
   while (1)
   {
 	// check if there is a new message to be processed.
@@ -173,23 +177,26 @@ int main(void)
 		ccr4 = *tim4_ccr4;
 
 		// TODO: need to check these vals
-		if(horizontalDir == 'l') {
+		// If we go right, we decrease ccr4
+		// if we go up, we decrease ccr3
+		if(horizontalDir == 'r') {
 			horizontalVal = horizontalVal * -1;
 		}
 
-		if(verticalDir == 'l') {
+		if(verticalDir == 'u') {
 			verticalVal = verticalVal * -1;
 		}
 
+		// THIS IS WHERE P-CONTROL KINDA MATTERS
 		// TODO: Check what the proper divide amt should be
-		ccr3 += verticalVal / 25;
-		ccr4 += horizontalVal / 25;
+		ccr3 += verticalVal / 40;
+		ccr4 += horizontalVal / 40;
 
 		// Now we check to see the values don't go above/below their limits
-		ccr3 = (ccr3 > SERVOMAX) ? SERVOMAX : ccr3;
-		ccr4 = (ccr4 > SERVOMAX) ? SERVOMAX : ccr4;
-		ccr3 = (ccr3 < SERVOMIN) ? SERVOMIN : ccr3;
-		ccr4 = (ccr4 < SERVOMIN) ? SERVOMIN : ccr4;
+		ccr3 = (ccr3 > SERVOMAXDOWN) ? SERVOMAXDOWN : ccr3;
+		ccr4 = (ccr4 > SERVOMAXLEFT) ? SERVOMAXLEFT : ccr4;
+		ccr3 = (ccr3 < SERVOMAXUP) ? SERVOMAXUP : ccr3;
+		ccr4 = (ccr4 < SERVOMAXRIGHT) ? SERVOMAXRIGHT : ccr4;
 
 		// write the new pulse widths to the new locations, if the horiz/vert vals were 0,
 		// no changes should be made in those directions
@@ -364,9 +371,9 @@ static void MX_TIM4_Init(void)
 
   /* USER CODE END TIM4_Init 1 */
   htim4.Instance = TIM4;
-  htim4.Init.Prescaler = 79;
+  htim4.Init.Prescaler = 19;
   htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim4.Init.Period = 999;
+  htim4.Init.Period = 3999;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_PWM_Init(&htim4) != HAL_OK)
@@ -380,13 +387,14 @@ static void MX_TIM4_Init(void)
     Error_Handler();
   }
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 50;
+  sConfigOC.Pulse = 80;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
   {
     Error_Handler();
   }
+  sConfigOC.Pulse = 50;
   if (HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_4) != HAL_OK)
   {
     Error_Handler();
