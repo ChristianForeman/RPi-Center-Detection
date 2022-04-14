@@ -12,7 +12,7 @@ To configure UART from RPI to Nucleo. Configure USART2 to be asynchronous, baudr
 ### Setting up I2C for HiLetgo MPU6050 Communication
 To set up I2C communication, click on I2C1 under Connectivity, and enable I2C for the I2C option.
 
-### Setting up ADC for Ultrasonic Sensor
+### Setting up ADC for Sharp 6Y 2Y0A700 F Infrared Radar (IR) Sensor
 To set up the ADC, click on ADC1 under Analog. Set IN1 to IN1-Single-Sided, Clock Prescaler to Asynchronous Clock divided by 32, and under the dropdown menu for Rank, set Sampling Time to 640.5 Cycles. Head to the Clock Configuration tab and run the diagnostic test with which the IDE prompts the user.
 
 ### Configure printf and float Capabilities
@@ -47,7 +47,7 @@ Make sure to connect ground between STM and RPi. Connect pin 8 (UART0_TXD) to PD
 ### Connecting the HiLetgo MPU6050
 Connect GND from the sensor to any pin labelled GND on the STM32. For VCC on the sensor, connect it to the port labelled 3V3. For SCL and SDA on the sensor, connect them to the respective pins labelled on the STM32 (PB8 and PB9, respectively).
 
-### Connecting the Ultrasonic Sensor
-Set up an external power supply to power the sensor with 5V. Connect both supply voltage (red) inputs and ground (black) inputs to the respectively colored inputs on the power supply. Connect both of the ultrasonic sensor ground wires to the STM32. This may require an external board such as a breadboard to facilitate the connections. Connect the analog data (white) wire to the PC0 pin on the STM32.
+### Connecting the IR Sensor
+Set up an external power supply to power the sensor with 5V. Connect both supply voltage (red) inputs and ground (black) inputs to the respectively colored inputs on the power supply. Connect both of the IR sensor ground wires to the STM32. This may require an external board such as a breadboard to facilitate the connections. Connect the analog data (white) wire to the PC0 pin on the STM32.
 
 ## Setting up the UI and Display STM32
