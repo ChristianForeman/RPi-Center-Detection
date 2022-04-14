@@ -21,16 +21,12 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "stdio.h"
+#include "math.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
-/* USER CODE END PTD */
-
-/* Private define ------------------------------------------------------------*/
-/* USER CODE BEGIN PD */
 #define TIM4_ADDR 0x40000800
 #define TIM_CR1_OFFSET 0x0
 #define TIM_PSC_OFFSET 0x28
@@ -39,6 +35,10 @@
 #define TIM_CCER_OFFSET 0x20
 #define TIM_CCR3_OFFSET 0x3C
 #define TIM_CCR4_OFFSET 0x40
+/* USER CODE END PTD */
+
+/* Private define ------------------------------------------------------------*/
+/* USER CODE BEGIN PD */
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -47,6 +47,10 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+ADC_HandleTypeDef hadc1;
+
+I2C_HandleTypeDef hi2c1;
+
 UART_HandleTypeDef hlpuart1;
 UART_HandleTypeDef huart2;
 
@@ -58,15 +62,18 @@ uint8_t message[8];
 
 int SERVOMAXLEFT = 320;
 int SERVOMAXRIGHT = 180;
-int SERVOMAXUP = 300;
-int SERVOMAXDOWN = 340;
-
+int SERVOMAXUP = 300; // 15 degrees
+int SERVOMAXDOWN = 340; // -15 degrees
+int SERVOPANMIDDLE = 250;
+int SERVOTILTMIDDLE = 320; // 0 degrees
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_ADC1_Init(void);
 static void MX_LPUART1_UART_Init(void);
+static void MX_I2C1_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_TIM4_Init(void);
 /* USER CODE BEGIN PFP */
@@ -90,7 +97,9 @@ void print_msg() {
 	printf("\n");
 }
 
-
+int16_t convert16Bit(uint8_t readData[]) {
+	return (int16_t)(((uint16_t)((uint16_t)readData[0]) << 8) + (uint16_t)readData[1]);
+}
 /* USER CODE END 0 */
 
 /**
@@ -121,7 +130,9 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_ADC1_Init();
   MX_LPUART1_UART_Init();
+  MX_I2C1_Init();
   MX_USART2_UART_Init();
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
@@ -142,7 +153,6 @@ int main(void)
 
   char horizontalDir, verticalDir;
   int horizontalVal, verticalVal;
-
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -150,8 +160,91 @@ int main(void)
   // These are balanced values
   *tim4_ccr3 = 320;
   *tim4_ccr4 = 250;
-  while (1)
-  {
+
+    uint8_t addr[] = {0x68, 0x3B, 0x68, 0x3C, 0x68, 0x6B, 0x00, 0x68, 0x1B, 0x00};
+    uint8_t reader[14];
+    for (uint8_t setter = 0; setter < 14; ++setter) {
+    	reader[setter] = setter*2;
+    }
+    uint8_t whoAmIChecker = 0;
+    uint8_t wakeUpVal = 0; // Same for gyro and accel config regs
+    uint8_t divVal = 7;
+    uint8_t ret;
+    uint8_t whoAmI[] = {0x68, 0x75};
+    uint8_t one[1] = {1};
+    uint16_t calculated = 0;
+    uint8_t i = 0;
+    uint8_t DEVICE_ADDR = 0xD0; // Address is 0x68, bit-shifted left for r/w bit
+    uint8_t WHO_AM_I = 0x75;
+    uint8_t PWR_M_1 = 0x6B;
+    uint8_t SAMPLE_DIV = 0x19;
+    uint8_t G_CONF = 0x1B;
+    uint8_t A_CONF = 0x1C;
+
+    ret = HAL_I2C_Mem_Read(&hi2c1, DEVICE_ADDR, WHO_AM_I, 1, &whoAmIChecker, 1, 1000);
+    if (ret != HAL_OK) printf("Reading WHO_AM_I failed!\n");
+    else printf("Received address in WHO_AM_I: 0x%x\n", whoAmIChecker);
+    ret = HAL_I2C_Mem_Write(&hi2c1, DEVICE_ADDR, PWR_M_1, 1, &wakeUpVal, 1, 1000);
+    if (ret != HAL_OK) printf("Waking up IMU failed!\n");
+    else printf("Woke up the IMU!\n");
+    ret = HAL_I2C_Mem_Write(&hi2c1, DEVICE_ADDR, SAMPLE_DIV, 1, &divVal, 1, 1000);
+    if (ret != HAL_OK) printf("Setting the sample rate failed!\n");
+    else printf("Sample rate set to 1kHz!\n");
+    ret = HAL_I2C_Mem_Write(&hi2c1, DEVICE_ADDR, G_CONF, 1, &wakeUpVal, 1, 1000);
+    if (ret != HAL_OK) printf("Gyroscope configuration failed!\n");
+    else printf("Gyroscope configuration succeeded!\n");
+    ret = HAL_I2C_Mem_Write(&hi2c1, DEVICE_ADDR, A_CONF, 1, &wakeUpVal, 1, 1000);
+    if (ret != HAL_OK) printf("Accelerometer configuration failed!\n");
+    else printf("Accelerometer configuration succeeded!\n");
+
+   uint32_t ADC_VAL = 0;
+   HAL_ADC_Start(&hadc1);
+   HAL_ADC_PollForConversion(&hadc1, 0xFFFFFFFF);
+   ADC_VAL = HAL_ADC_GetValue(&hadc1);
+   while (1)
+   {
+ 	//======================= IR SENSOR BEGIN =======================//
+ 	HAL_ADC_Start(&hadc1);
+    HAL_ADC_PollForConversion(&hadc1, 0xFFFFFFFF);
+ 	ADC_VAL = HAL_ADC_GetValue(&hadc1);
+ 	float f1 = (ADC_VAL/4096.0);
+ 	float voltage = f1*3.3;
+ 	float dist = 0.0;
+ 	if (voltage > 1.388) { // Less than 2 meters
+ 		dist = (voltage - 4.4712)/-1.5608;
+ 	}
+ 	else {
+ 		dist = (voltage - 2.1445)/-0.3829;
+ 	}
+ 	printf("Received Distance: %f meters\n", dist);
+ 	//======================= IR SENSOR END =========================//
+
+
+
+ 	//======================= IMU SENSOR BEGIN ======================//
+	ret = HAL_I2C_Mem_Read(&hi2c1, DEVICE_ADDR, 0x3B, 1, &reader[0], 14, 1000);
+	if (ret != HAL_OK) printf("Error receiving data!\n");
+	else {
+		float accelX = convert16Bit(&reader[0])/16384.0;
+		float accelY = convert16Bit(&reader[2])/16384.0;
+		float accelZ = convert16Bit(&reader[4])/16384.0;
+		float temp = convert16Bit(&reader[6])/340.0 + 36.53;
+		float gyroX = convert16Bit(&reader[8])/131.0;
+		float gyroY = convert16Bit(&reader[10])/131.0;
+		float gyroZ = convert16Bit(&reader[12])/131.0;
+		printf("Received Accelerometer Values: (%3.3f, %3.3f, %3.3f)\n", accelX, accelY, accelZ);
+		printf("Received Temperature: %3.3f\n", temp);
+		printf("Received Gyro Values: (%3.3f, %3.3f, %3.3f)\n", gyroX, gyroY, gyroZ);
+		// For accuracy divide accelZ value by 0.965
+		float angle = accelZ/0.965 > 1.0 ? 0.0 : acosf(accelZ/0.965)*180.0/M_PI;
+		if (accelY > 0) angle *= -1;
+		printf("Current Angle: %f degrees\n\n", angle);
+	}
+	//======================= IMU SENSOR END ========================//
+
+
+
+	//======================= RASPBERRY PI 4 BEGIN ==================//
 	// check if there is a new message to be processed.
 	if(isNewMessage == 1) {
 		print_msg();
@@ -205,12 +298,16 @@ int main(void)
 
 		isNewMessage = 0; // we have fully processed the message now
 	}
+	//======================= RASPBERRY PI 4 END ====================//
+
+
+
 	// check to see if interrupts work in hal delays
-	HAL_Delay(250);
+ 	HAL_Delay(500);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-  }
+   }
   /* USER CODE END 3 */
 }
 
@@ -254,6 +351,108 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief ADC1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_ADC1_Init(void)
+{
+
+  /* USER CODE BEGIN ADC1_Init 0 */
+
+  /* USER CODE END ADC1_Init 0 */
+
+  ADC_ChannelConfTypeDef sConfig = {0};
+
+  /* USER CODE BEGIN ADC1_Init 1 */
+
+  /* USER CODE END ADC1_Init 1 */
+  /** Common config
+  */
+  hadc1.Instance = ADC1;
+  hadc1.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV32;
+  hadc1.Init.Resolution = ADC_RESOLUTION_12B;
+  hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+  hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
+  hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+  hadc1.Init.LowPowerAutoWait = DISABLE;
+  hadc1.Init.ContinuousConvMode = DISABLE;
+  hadc1.Init.NbrOfConversion = 1;
+  hadc1.Init.DiscontinuousConvMode = DISABLE;
+  hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+  hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+  hadc1.Init.DMAContinuousRequests = DISABLE;
+  hadc1.Init.Overrun = ADC_OVR_DATA_PRESERVED;
+  hadc1.Init.OversamplingMode = DISABLE;
+  if (HAL_ADC_Init(&hadc1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Regular Channel
+  */
+  sConfig.Channel = ADC_CHANNEL_1;
+  sConfig.Rank = ADC_REGULAR_RANK_1;
+  sConfig.SamplingTime = ADC_SAMPLETIME_640CYCLES_5;
+  sConfig.SingleDiff = ADC_SINGLE_ENDED;
+  sConfig.OffsetNumber = ADC_OFFSET_NONE;
+  sConfig.Offset = 0;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN ADC1_Init 2 */
+
+  /* USER CODE END ADC1_Init 2 */
+
+}
+
+/**
+  * @brief I2C1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_I2C1_Init(void)
+{
+
+  /* USER CODE BEGIN I2C1_Init 0 */
+
+  /* USER CODE END I2C1_Init 0 */
+
+  /* USER CODE BEGIN I2C1_Init 1 */
+
+  /* USER CODE END I2C1_Init 1 */
+  hi2c1.Instance = I2C1;
+  hi2c1.Init.Timing = 0x00000E14;
+  hi2c1.Init.OwnAddress1 = 0;
+  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c1.Init.OwnAddress2 = 0;
+  hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Analogue filter
+  */
+  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Digital filter
+  */
+  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2C1_Init 2 */
+
+  /* USER CODE END I2C1_Init 2 */
+
 }
 
 /**
@@ -387,14 +586,14 @@ static void MX_TIM4_Init(void)
     Error_Handler();
   }
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 80;
+  sConfigOC.Pulse = 320;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
   {
     Error_Handler();
   }
-  sConfigOC.Pulse = 50;
+  sConfigOC.Pulse = 250;
   if (HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_4) != HAL_OK)
   {
     Error_Handler();
@@ -450,26 +649,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Alternate = GPIO_AF13_SAI1;
   HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PC0 PC1 PC2 PC3
-                           PC4 PC5 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3
-                          |GPIO_PIN_4|GPIO_PIN_5;
-  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG_ADC_CONTROL;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
   /*Configure GPIO pin : PA0 */
   GPIO_InitStruct.Pin = GPIO_PIN_0;
   GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   GPIO_InitStruct.Alternate = GPIO_AF1_TIM2;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : PA1 PA3 */
-  GPIO_InitStruct.Pin = GPIO_PIN_1|GPIO_PIN_3;
-  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG_ADC_CONTROL;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PA4 PA5 PA6 PA7 */
@@ -486,12 +671,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   GPIO_InitStruct.Alternate = GPIO_AF2_TIM3;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : PB1 */
-  GPIO_InitStruct.Pin = GPIO_PIN_1;
-  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG_ADC_CONTROL;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PB2 PB6 */
@@ -614,29 +793,19 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Alternate = GPIO_AF6_SPI3;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PB8 PB9 */
-  GPIO_InitStruct.Pin = GPIO_PIN_8|GPIO_PIN_9;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-  GPIO_InitStruct.Alternate = GPIO_AF4_I2C1;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
 }
 
 /* USER CODE BEGIN 4 */
-
 #ifdef __GNUC__
 #define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
 #else
-  #define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
+#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
 #endif /* __GNUC__ */
 PUTCHAR_PROTOTYPE
 {
-  HAL_UART_Transmit(&hlpuart1, (uint8_t *)&ch, 1, 0xFFFF);
-  return ch;
+	HAL_UART_Transmit(&hlpuart1, (uint8_t *)&ch, 1, 0xFFFF);
+	return ch;
 }
-
 /* USER CODE END 4 */
 
 /**
