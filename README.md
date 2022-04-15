@@ -77,13 +77,19 @@ To set up the ADC, click on ADC1 under Analog. Set IN1 to IN1-Single-Sided, Cloc
 
 ## Sources & References
 
-In addition to each component's respective data sheets and our EECS 373 lab documents, we referenced these resources as well. 
+In addition to the STM32 data sheets and our EECS 373 lab documents, we referenced these resources as well. 
+
+### Materials used:
+https://docs.google.com/spreadsheets/d/1BM6z1we4ULig2K3vdXIlRVfSoMTgGnRhy5ityknNGfo/edit#gid=0
 
 ### LCD module:
 https://www.youtube.com/watch?v=7mQppaEJjT4&t=220s
 https://controllerstech.com/i2c-lcd-in-stm32/
+https://us.beta-layout.com/download/rk/RK-10290_410.pdf
+https://cdn-shop.adafruit.com/datasheets/TC2004A-01.pdf
 
 ### VGA Projection:
 https://www.youtube.com/watch?v=mR-eo7a4n5Q
 https://github.com/dominic-meads/Quartus-Projects/tree/main/VGA_face
 https://www.fpga4fun.com/PongGame.html
+https://www.intel.com/content/www/us/en/404.html?ref=https://www.intel.com/content/dam/www/programmable/us/en/portal/dsn/42/doc-us-dsnbk-42-1404062209-de2-115-user-manual.pdf
