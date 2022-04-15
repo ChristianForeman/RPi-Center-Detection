@@ -84,6 +84,7 @@ static void MX_TIM4_Init(void);
 /* USER CODE BEGIN 0 */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 	// if there is no new message aka we already processed last UART, then we can accept another one, otherwise do nothing
+	printf("RPi Coordinates Received\n");
 	if(isNewMessage == 0) {
 		HAL_UART_Receive_IT(&huart2, message, 8);
 		isNewMessage = 1;
@@ -152,17 +153,19 @@ int main(void)
   uint32_t ccr3, ccr4;
 
   char horizontalDir, verticalDir;
-  int horizontalVal, verticalVal;
+  int horizontalVal = 0;
+  int verticalVal = 0;
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   // These are balanced values
   *tim4_ccr3 = 320;
-  *tim4_ccr4 = 250;
+  *tim4_ccr4 = 210;
 
     uint8_t addr[] = {0x68, 0x3B, 0x68, 0x3C, 0x68, 0x6B, 0x00, 0x68, 0x1B, 0x00};
     uint8_t reader[14];
+    uint32_t printer = 0;
     for (uint8_t setter = 0; setter < 14; ++setter) {
     	reader[setter] = setter*2;
     }
@@ -181,21 +184,21 @@ int main(void)
     uint8_t G_CONF = 0x1B;
     uint8_t A_CONF = 0x1C;
 
-    ret = HAL_I2C_Mem_Read(&hi2c1, DEVICE_ADDR, WHO_AM_I, 1, &whoAmIChecker, 1, 1000);
-    if (ret != HAL_OK) printf("Reading WHO_AM_I failed!\n");
-    else printf("Received address in WHO_AM_I: 0x%x\n", whoAmIChecker);
-    ret = HAL_I2C_Mem_Write(&hi2c1, DEVICE_ADDR, PWR_M_1, 1, &wakeUpVal, 1, 1000);
-    if (ret != HAL_OK) printf("Waking up IMU failed!\n");
-    else printf("Woke up the IMU!\n");
-    ret = HAL_I2C_Mem_Write(&hi2c1, DEVICE_ADDR, SAMPLE_DIV, 1, &divVal, 1, 1000);
-    if (ret != HAL_OK) printf("Setting the sample rate failed!\n");
-    else printf("Sample rate set to 1kHz!\n");
-    ret = HAL_I2C_Mem_Write(&hi2c1, DEVICE_ADDR, G_CONF, 1, &wakeUpVal, 1, 1000);
-    if (ret != HAL_OK) printf("Gyroscope configuration failed!\n");
-    else printf("Gyroscope configuration succeeded!\n");
-    ret = HAL_I2C_Mem_Write(&hi2c1, DEVICE_ADDR, A_CONF, 1, &wakeUpVal, 1, 1000);
-    if (ret != HAL_OK) printf("Accelerometer configuration failed!\n");
-    else printf("Accelerometer configuration succeeded!\n");
+//    ret = HAL_I2C_Mem_Read(&hi2c1, DEVICE_ADDR, WHO_AM_I, 1, &whoAmIChecker, 1, 1000);
+//    if (ret != HAL_OK) printf("Reading WHO_AM_I failed!\n");
+//    else printf("Received address in WHO_AM_I: 0x%x\n", whoAmIChecker);
+//    ret = HAL_I2C_Mem_Write(&hi2c1, DEVICE_ADDR, PWR_M_1, 1, &wakeUpVal, 1, 1000);
+//    if (ret != HAL_OK) printf("Waking up IMU failed!\n");
+//    else printf("Woke up the IMU!\n");
+//    ret = HAL_I2C_Mem_Write(&hi2c1, DEVICE_ADDR, SAMPLE_DIV, 1, &divVal, 1, 1000);
+//    if (ret != HAL_OK) printf("Setting the sample rate failed!\n");
+//    else printf("Sample rate set to 1kHz!\n");
+//    ret = HAL_I2C_Mem_Write(&hi2c1, DEVICE_ADDR, G_CONF, 1, &wakeUpVal, 1, 1000);
+//    if (ret != HAL_OK) printf("Gyroscope configuration failed!\n");
+//    else printf("Gyroscope configuration succeeded!\n");
+//    ret = HAL_I2C_Mem_Write(&hi2c1, DEVICE_ADDR, A_CONF, 1, &wakeUpVal, 1, 1000);
+//    if (ret != HAL_OK) printf("Accelerometer configuration failed!\n");
+//    else printf("Accelerometer configuration succeeded!\n");
 
    uint32_t ADC_VAL = 0;
    HAL_ADC_Start(&hadc1);
@@ -203,44 +206,51 @@ int main(void)
    ADC_VAL = HAL_ADC_GetValue(&hadc1);
    while (1)
    {
+	//======================= Globals BEGIN =========================//
+	   if (printer > 2000) printer = 0;
+	   else printer++;
+	//======================= Globals END ===========================//
+
  	//======================= IR SENSOR BEGIN =======================//
- 	HAL_ADC_Start(&hadc1);
-    HAL_ADC_PollForConversion(&hadc1, 0xFFFFFFFF);
- 	ADC_VAL = HAL_ADC_GetValue(&hadc1);
- 	float f1 = (ADC_VAL/4096.0);
- 	float voltage = f1*3.3;
- 	float dist = 0.0;
- 	if (voltage > 1.388) { // Less than 2 meters
- 		dist = (voltage - 4.4712)/-1.5608;
- 	}
- 	else {
- 		dist = (voltage - 2.1445)/-0.3829;
- 	}
- 	printf("Received Distance: %f meters\n", dist);
+	   if (printer == 2000) {
+		   HAL_ADC_Start(&hadc1);
+		   HAL_ADC_PollForConversion(&hadc1, 0xFFFFFFFF);
+		   ADC_VAL = HAL_ADC_GetValue(&hadc1);
+		   float f1 = (ADC_VAL/4096.0);
+		   float voltage = f1*3.3;
+		   float dist = 0.0;
+		   if (voltage > 1.388) { // Less than 2 meters
+			   dist = (voltage - 4.4712)/-1.5608;
+		   }
+		   else {
+			   dist = (voltage - 2.1445)/-0.3829;
+		   }
+		   printf("Received Distance: %f meters\n", dist);
+	   }
  	//======================= IR SENSOR END =========================//
 
 
 
- 	//======================= IMU SENSOR BEGIN ======================//
-	ret = HAL_I2C_Mem_Read(&hi2c1, DEVICE_ADDR, 0x3B, 1, &reader[0], 14, 1000);
-	if (ret != HAL_OK) printf("Error receiving data!\n");
-	else {
-		float accelX = convert16Bit(&reader[0])/16384.0;
-		float accelY = convert16Bit(&reader[2])/16384.0;
-		float accelZ = convert16Bit(&reader[4])/16384.0;
-		float temp = convert16Bit(&reader[6])/340.0 + 36.53;
-		float gyroX = convert16Bit(&reader[8])/131.0;
-		float gyroY = convert16Bit(&reader[10])/131.0;
-		float gyroZ = convert16Bit(&reader[12])/131.0;
-		printf("Received Accelerometer Values: (%3.3f, %3.3f, %3.3f)\n", accelX, accelY, accelZ);
-		printf("Received Temperature: %3.3f\n", temp);
-		printf("Received Gyro Values: (%3.3f, %3.3f, %3.3f)\n", gyroX, gyroY, gyroZ);
-		// For accuracy divide accelZ value by 0.965
-		float angle = accelZ/0.965 > 1.0 ? 0.0 : acosf(accelZ/0.965)*180.0/M_PI;
-		if (accelY > 0) angle *= -1;
-		printf("Current Angle: %f degrees\n\n", angle);
-	}
-	//======================= IMU SENSOR END ========================//
+// 	//======================= IMU SENSOR BEGIN ======================//
+//	ret = HAL_I2C_Mem_Read(&hi2c1, DEVICE_ADDR, 0x3B, 1, &reader[0], 14, 1000);
+//	if (ret != HAL_OK) printf("Error receiving data!\n");
+//	else {
+//		float accelX = convert16Bit(&reader[0])/16384.0;
+//		float accelY = convert16Bit(&reader[2])/16384.0;
+//		float accelZ = convert16Bit(&reader[4])/16384.0;
+//		float temp = convert16Bit(&reader[6])/340.0 + 36.53;
+//		float gyroX = convert16Bit(&reader[8])/131.0;
+//		float gyroY = convert16Bit(&reader[10])/131.0;
+//		float gyroZ = convert16Bit(&reader[12])/131.0;
+//		if (printer == 500) printf("Received Accelerometer Values: (%3.3f, %3.3f, %3.3f)\n", accelX, accelY, accelZ);
+//		if (printer == 500) printf("Received Temperature: %3.3f\n", temp);
+//		if (printer == 500) printf("Received Gyro Values: (%3.3f, %3.3f, %3.3f)\n", gyroX, gyroY, gyroZ);
+//		// For accuracy divide accelZ value by 0.965
+//		float angle = accelZ/0.965 > 1.0 ? 0.0 : acosf(accelZ/0.965)*180.0/M_PI;
+//		if (accelY > 0) angle *= -1;
+//		if (printer == 500) printf("Current Angle: %f degrees\n\n", angle);
+//	}
+//	//======================= IMU SENSOR END ========================//
 
 
 
@@ -261,8 +271,8 @@ int main(void)
 
 		// TODO: Account for offset in the vertical direction with respect to camera
         // Put constraints on the values read in, if less than 25, no moving necessary, if greater than 500 restrict to 500 to reduce large movements
-		horizontalVal = (horizontalVal < 25) ? 0 : horizontalVal;
-		verticalVal = (verticalVal < 25) ? 0 : verticalVal;
+		horizontalVal = (horizontalVal < 10) ? 0 : horizontalVal;
+		verticalVal = (verticalVal < 10) ? 0 : verticalVal;
 		horizontalVal = (horizontalVal > 500) ? 500 : horizontalVal;
 		verticalVal = (verticalVal > 500) ? 500 : verticalVal;
 
@@ -282,8 +292,12 @@ int main(void)
 
 		// THIS IS WHERE P-CONTROL KINDA MATTERS
 		// TODO: Check what the proper divide amt should be
-		ccr3 += verticalVal / 40;
-		ccr4 += horizontalVal / 40;
+
+		//vertical adjustment
+		verticalVal += 130;
+
+		ccr3 += (verticalVal / 20);
+		ccr4 += (horizontalVal / 20);
 
 		// Now we check to see the values don't go above/below their limits
 		ccr3 = (ccr3 > SERVOMAXDOWN) ? SERVOMAXDOWN : ccr3;
@@ -297,13 +311,41 @@ int main(void)
 		*tim4_ccr4 = ccr4;
 
 		isNewMessage = 0; // we have fully processed the message now
-	}
+	} // Message processing
+	// Always running servo P controller
+//	ccr3 = *tim4_ccr3;
+//	ccr4 = *tim4_ccr4;
+//	if (verticalVal > 0) {
+//		++ccr3;
+//		--verticalVal;
+//	}
+//	else if (verticalVal < 0){
+//		--ccr3;
+//		++verticalVal;
+//	}
+//	if (horizontalVal > 0){
+//		++ccr4;
+//		--horizontalVal;
+//	}
+//	else if (horizontalVal < 0) {
+//		--ccr4;
+//		++horizontalVal;
+//	}
+////	ccr3 += verticalVal / 20;
+////	ccr4 += horizontalVal / 20;
+//	ccr3 = (ccr3 > SERVOMAXDOWN) ? SERVOMAXDOWN : ccr3;
+//	ccr4 = (ccr4 > SERVOMAXLEFT) ? SERVOMAXLEFT : ccr4;
+//	ccr3 = (ccr3 < SERVOMAXUP) ? SERVOMAXUP : ccr3;
+//	ccr4 = (ccr4 < SERVOMAXRIGHT) ? SERVOMAXRIGHT : ccr4;
+//	*tim4_ccr3 = ccr3;
+//	*tim4_ccr4 = ccr4;
+	// End of P-controller
 	//======================= RASPBERRY PI 4 END ====================//
 
 
 
 	// check to see if interrupts work in hal delays
- 	HAL_Delay(500);
+ 	//HAL_Delay(1);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -393,7 +435,7 @@ static void MX_ADC1_Init(void)
   }
   /** Configure Regular Channel
   */
-  sConfig.Channel = ADC_CHANNEL_1;
+  sConfig.Channel = ADC_CHANNEL_2;
   sConfig.Rank = ADC_REGULAR_RANK_1;
   sConfig.SamplingTime = ADC_SAMPLETIME_640CYCLES_5;
   sConfig.SingleDiff = ADC_SINGLE_ENDED;
