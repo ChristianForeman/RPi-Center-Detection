@@ -51,3 +51,19 @@ Connect GND from the sensor to any pin labelled GND on the STM32. For VCC on the
 Set up an external power supply to power the sensor with 5V. Connect both supply voltage (red) inputs and ground (black) inputs to the respectively colored inputs on the power supply. Connect both of the IR sensor ground wires to the STM32. This may require an external board such as a breadboard to facilitate the connections. Connect the analog data (white) wire to the PC0 pin on the STM32.
 
 ## Setting up the UI and Display STM32
+
+### Setting up I2C Communication for WayinTop 20x4 2004 LCD Display Module via IIC/I2C/TWI Serial Interface Adapter
+To set up I2C communication, click on I2C1 under Connectivity, and enable I2C for the I2C option. Solder the adapter to the back of the LCD display module. Connect SCL, SDA, ground and 5V to the module. SCL connects to the PB8 pin and SDA connects to the PB9 pin on the STM32L4R5ZI-P
+
+## Sources & References
+
+In addition to each component's respective data sheets and our EECS 373 lab documents, we referenced these resources as well. 
+
+## LCD module:
+https://www.youtube.com/watch?v=7mQppaEJjT4&t=220s
+https://controllerstech.com/i2c-lcd-in-stm32/
+
+## VGA Projection:
+https://www.youtube.com/watch?v=mR-eo7a4n5Q
+https://github.com/dominic-meads/Quartus-Projects/tree/main/VGA_face
+https://www.fpga4fun.com/PongGame.html
