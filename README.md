@@ -52,18 +52,38 @@ Set up an external power supply to power the sensor with 5V. Connect both supply
 
 ## Setting up the UI and Display STM32
 
-### Setting up I2C Communication for WayinTop 20x4 2004 LCD Display Module via IIC/I2C/TWI Serial Interface Adapter
+The user interface section of our project operates using a separate STM32. All below steps are using a NEW STM32 than the steps above. Copy the UserInterface.c file as your main file in STM32CudeIDE after configuring your project as described below. Copy the projector.v and projector.qsf file into your Quartus Prime Lite v.18.1 project.
+
+### Setting up I2C Communication for WayinTop 20x4 2004 LCD Display Module via I2C Serial Interface Adapter
 To set up I2C communication, click on I2C1 under Connectivity, and enable I2C for the I2C option. Solder the adapter to the back of the LCD display module. Connect SCL, SDA, ground and 5V to the module. SCL connects to the PB8 pin and SDA connects to the PB9 pin on the STM32L4R5ZI-P
+
+### Setting up the 5-directional button
+The five directional button has 9 pins: UP, DOWN, LEFT, RIGHT, CENTER, SET, RESET, POWER & GROUND. Connect UP to PA1. Connect DOWN to PA0. Connect RIGHT to PA4. Connect LEFT to PA2. Connect CENTER to PA3. Connect 5V to power and ground to ground. Enable PA0-4 as GPIO inputs. Connect nothing to SET and RESET.
+				
+### Connect FPGA and STM32
+Enable as PB6, PF1 and PF2 as GPIO outputs for the STM32. Connect PB6 to FPGA pin AB22 and PF1 to FPGA pin AB21 and PF2 to FPGA pin AC21. For the DE2 FPGA, GPIO[0] is AB22, GPIO[2] is AB21, GPIO[4] is AC21.
+
+### Connect FPGA to Projector
+Plug in a VGA to VGA cable from FPGA VGA port to projector VGA port. Use our projector.v and project.qsf files and a USB blaster to program your FPGA.
+
+### Configure printf and float Capabilities
+Follow steps from above section.
+
+### Setting up I2C for HiLetgo MPU6050 Communication
+To set up I2C communication, click on I2C4 under Connectivity, and enable I2C for the I2C option. Connect SDA pin to PF15 and SCL pin to PF14. 
+
+### Setting up ADC for Sharp 6Y 2Y0A700 F Infrared Radar (IR) Sensor
+To set up the ADC, click on ADC1 under Analog. Set IN1 to IN1-Single-Sided, Clock Prescaler to Asynchronous Clock divided by 32, and under the dropdown menu for Rank, set Sampling Time to 640.5 Cycles. Head to the Clock Configuration tab and run the diagnostic test with which the IDE prompts the user. Connect analog input voltage of IR sensor to PC0.
 
 ## Sources & References
 
 In addition to each component's respective data sheets and our EECS 373 lab documents, we referenced these resources as well. 
 
-## LCD module:
+### LCD module:
 https://www.youtube.com/watch?v=7mQppaEJjT4&t=220s
 https://controllerstech.com/i2c-lcd-in-stm32/
 
-## VGA Projection:
+### VGA Projection:
 https://www.youtube.com/watch?v=mR-eo7a4n5Q
 https://github.com/dominic-meads/Quartus-Projects/tree/main/VGA_face
 https://www.fpga4fun.com/PongGame.html
