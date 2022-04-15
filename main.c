@@ -63,7 +63,7 @@ uint8_t message[8];
 int SERVOMAXLEFT = 320;
 int SERVOMAXRIGHT = 180;
 int SERVOMAXUP = 300; // 15 degrees
-int SERVOMAXDOWN = 340; // -15 degrees
+int SERVOMAXDOWN = 340; // -10 degrees
 int SERVOPANMIDDLE = 250;
 int SERVOTILTMIDDLE = 320; // 0 degrees
 /* USER CODE END PV */
