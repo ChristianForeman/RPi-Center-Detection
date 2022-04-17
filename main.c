@@ -59,6 +59,7 @@ TIM_HandleTypeDef htim4;
 /* USER CODE BEGIN PV */
 int isNewMessage = 0; // is a 0 if no new message, is a 1 if there is a message to be processed
 uint8_t message[8];
+int ticksSinceLastDetection = 0;
 
 int SERVOMAXLEFT = 320;
 int SERVOMAXRIGHT = 180;
@@ -84,7 +85,8 @@ static void MX_TIM4_Init(void);
 /* USER CODE BEGIN 0 */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 	// if there is no new message aka we already processed last UART, then we can accept another one, otherwise do nothing
-	printf("RPi Coordinates Received\n");
+	//printf("RPi Coordinates Received\n");
+	ticksSinceLastDetection = 0;
 	if(isNewMessage == 0) {
 		HAL_UART_Receive_IT(&huart2, message, 8);
 		isNewMessage = 1;
@@ -155,13 +157,14 @@ int main(void)
   char horizontalDir, verticalDir;
   int horizontalVal = 0;
   int verticalVal = 0;
+  float dist = 0.0;
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   // These are balanced values
   *tim4_ccr3 = 320;
-  *tim4_ccr4 = 210;
+  *tim4_ccr4 = 250;
 
     uint8_t addr[] = {0x68, 0x3B, 0x68, 0x3C, 0x68, 0x6B, 0x00, 0x68, 0x1B, 0x00};
     uint8_t reader[14];
@@ -218,7 +221,6 @@ int main(void)
 		   ADC_VAL = HAL_ADC_GetValue(&hadc1);
 		   float f1 = (ADC_VAL/4096.0);
 		   float voltage = f1*3.3;
-		   float dist = 0.0;
 		   if (voltage > 1.388) { // Less than 2 meters
 			   dist = (voltage - 4.4712)/-1.5608;
 		   }
@@ -256,6 +258,12 @@ int main(void)
 
 	//======================= RASPBERRY PI 4 BEGIN ==================//
 	// check if there is a new message to be processed.
+	// if we haven't received data from the rpi in x miliseconds, then we recenter the projector
+	if (ticksSinceLastDetection > 200000) {
+		*tim4_ccr3 = 320;
+		*tim4_ccr4 = 250;
+		ticksSinceLastDetection = 0;
+	}
 	if(isNewMessage == 1) {
 		print_msg();
 
@@ -294,10 +302,15 @@ int main(void)
 		// TODO: Check what the proper divide amt should be
 
 		//vertical adjustment
-		verticalVal += 130;
+		verticalVal += 100;
 
-		ccr3 += (verticalVal / 20);
-		ccr4 += (horizontalVal / 20);
+		// Bound dist between 1 and 6
+		dist = dist < 1 ? 1 : (dist > 6 ? 6 : dist);
+		//dist = 3;
+		ccr3 += (verticalVal / ((int) (9 * dist)));
+		ccr4 += (horizontalVal / ((int) (6 * dist)));
+		//ccr3 += (verticalVal / 15);
+		//ccr4 += (horizontalVal / 10);
 
 		// Now we check to see the values don't go above/below their limits
 		ccr3 = (ccr3 > SERVOMAXDOWN) ? SERVOMAXDOWN : ccr3;
@@ -346,6 +359,7 @@ int main(void)
 
 	// check to see if interrupts work in hal delays
  	//HAL_Delay(1);
+	ticksSinceLastDetection++;
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
