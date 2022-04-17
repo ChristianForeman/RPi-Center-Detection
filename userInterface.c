@@ -308,6 +308,7 @@ int main(void)
 	uint8_t SAMPLE_DIV = 0x19;
 	uint8_t G_CONF = 0x1B;
 	uint8_t A_CONF = 0x1C;
+	float runningAverage = 0;
 
 	ret = HAL_I2C_Mem_Read(&hi2c4, DEVICE_ADDR, WHO_AM_I, 1, &whoAmIChecker, 1, 1000);
 	if (ret != HAL_OK) printf("Reading WHO_AM_I failed!\n");
@@ -364,7 +365,20 @@ int main(void)
 			// For accuracy divide accelZ value by 0.965
 			angle = accelZ / 0.965 > 1.0 ? 0.0 : acosf(accelZ / 0.965) *180.0 / M_PI;
 			if (accelY > 0) angle *= -1;
+			//printf("Current Angle: %f degrees\n\n", angle);
+			float gyroX = convert16Bit(&reader[8])/131.0;
+			if (gyroX > 5 || gyroX < -5) {
+				runningAverage = angle;
+			}
+			else {
+				runningAverage = runningAverage*0.875 + 0.125*angle;
+				angle = runningAverage;
+			}
 			printf("Current Angle: %f degrees\n\n", angle);
+			//float gyroY = convert16Bit(&reader[10])/131.0;
+			//float gyroZ = convert16Bit(&reader[12])/131.0;
+			//printf("Received Gyro Values: (%3.3f, %3.3f, %3.3f)\n\n", gyroX, gyroY, gyroZ);
+			//printf("Current ZValue: %f degrees\n\n", accelZ);
 		}
 
 		//======================= IMU SENSOR END ========================//
@@ -446,7 +460,7 @@ int main(void)
 			char *str1 = "Dis:";
 			char *str3 = "Deg:";
 			char str2[20];
-			snprintf(str2, 20, "%s %1.2f %s %1.2f", str1, dist, str3, angle);
+			snprintf(str2, 20, "%s %1.2f %s %2.1f", str1, dist, str3, angle);
 			lcd_print(str2);
 			lcd_send_cmd(0x80 | currentPosition);	//back to old pos
 		}
