@@ -129,16 +129,16 @@ https://www.intel.com/content/www/us/en/404.html?ref=https://www.intel.com/conte
 
 ### HiLetgo MPU6050 (IMU)
 ***
-* (Datasheet)[https://invensense.tdk.com/wp-content/uploads/2015/02/MPU-6000-Datasheet1.pdf]
-* (Register Map)[https://invensense.tdk.com/wp-content/uploads/2015/02/MPU-6000-Register-Map1.pdf]
-* (Tutorial Video)[https://www.youtube.com/watch?v=xxphp9wDnHA]
-* (Tutorial Website)[https://mschoeffler.com/2017/10/05/tutorial-how-to-use-the-gy-521-module-mpu-6050-breakout-board-with-the-arduino-uno/]
-* (Hal I2C Library Documentation)[https://deepbluembedded.com/stm32-i2c-tutorial-hal-examples-slave-dma/]
+* [Datasheet](https://invensense.tdk.com/wp-content/uploads/2015/02/MPU-6000-Datasheet1.pdf)
+* [Register Map](https://invensense.tdk.com/wp-content/uploads/2015/02/MPU-6000-Register-Map1.pdf)
+* [Tutorial Video](https://www.youtube.com/watch?v=xxphp9wDnHA)
+* [Tutorial Website](https://mschoeffler.com/2017/10/05/tutorial-how-to-use-the-gy-521-module-mpu-6050-breakout-board-with-the-arduino-uno/)
+* [Hal I2C Library Documentation](https://deepbluembedded.com/stm32-i2c-tutorial-hal-examples-slave-dma/)
 
 ### Pololu VL53L1X Time-of-Flight LiDAR Sensor
 ***
-* (Datasheet)[https://www.pololu.com/product-info-merged/3415]
-* (GitHub Arduino Library)[https://github.com/pololu/vl53l1x-arduino]
+* [Datasheet](https://www.pololu.com/product-info-merged/3415)
+* [GitHub Arduino Library](https://github.com/pololu/vl53l1x-arduino)
 
 
 
