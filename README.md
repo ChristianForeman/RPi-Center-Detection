@@ -78,6 +78,36 @@ To set up the ADC, click on ADC1 under Analog. Set IN1 to IN1-Single-Sided, Cloc
 ### Connecting the IR Sensor
 Add a wire that connects PC0 on this STM to the white analog input wires on the existing breadboard.
 
+## Helpful Code Blocks
+
+We had code blocks that were used to help us at the start of the project, but were not needed for the final product.
+
+### I2C Address Scanner
+
+```
+/* Infinite loop */
+  /* USER CODE BEGIN WHILE */
+  uint8_t addr[] = {0x1B, 0x1D, 0x1F, 0x21};
+  uint8_t reader[10];
+  uint8_t ret;
+  uint8_t one[1] = {1};
+  uint16_t calculated = 0;
+  uint8_t i = 0;
+  while (1)
+  {
+	  ret = HAL_I2C_Master_Transmit(&hi2c1, i, &one[0], 1, 1000);
+	  if (ret != HAL_OK) printf("Wrong address of %i\n", i);
+	  else printf("ADDRESS IS %i!!!\n", i);
+	  if (i == 255) break;
+	  ++i;
+	  HAL_Delay(50);
+    /* USER CODE END WHILE */
+
+    /* USER CODE BEGIN 3 */
+  }
+/* USER CODE END 3 */
+```
+
 ## Sources & References
 
 In addition to the STM32 data sheets and our EECS 373 lab documents, we referenced these resources as well. 
@@ -96,3 +126,19 @@ https://www.youtube.com/watch?v=mR-eo7a4n5Q
 https://github.com/dominic-meads/Quartus-Projects/tree/main/VGA_face
 https://www.fpga4fun.com/PongGame.html
 https://www.intel.com/content/www/us/en/404.html?ref=https://www.intel.com/content/dam/www/programmable/us/en/portal/dsn/42/doc-us-dsnbk-42-1404062209-de2-115-user-manual.pdf
+
+### HiLetgo MPU6050 (IMU)
+***
+* (Datasheet)[https://invensense.tdk.com/wp-content/uploads/2015/02/MPU-6000-Datasheet1.pdf]
+* (Register Map)[https://invensense.tdk.com/wp-content/uploads/2015/02/MPU-6000-Register-Map1.pdf]
+* (Tutorial Video)[https://www.youtube.com/watch?v=xxphp9wDnHA]
+* (Tutorial Website)[https://mschoeffler.com/2017/10/05/tutorial-how-to-use-the-gy-521-module-mpu-6050-breakout-board-with-the-arduino-uno/]
+* (Hal I2C Library Documentation)[https://deepbluembedded.com/stm32-i2c-tutorial-hal-examples-slave-dma/]
+
+### Pololu VL53L1X Time-of-Flight LiDAR Sensor
+***
+* (Datasheet)[https://www.pololu.com/product-info-merged/3415]
+* (GitHub Arduino Library)[https://github.com/pololu/vl53l1x-arduino]
+
+
+
