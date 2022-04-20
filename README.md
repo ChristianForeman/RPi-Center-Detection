@@ -121,6 +121,14 @@ https://controllerstech.com/i2c-lcd-in-stm32/
 https://us.beta-layout.com/download/rk/RK-10290_410.pdf
 https://cdn-shop.adafruit.com/datasheets/TC2004A-01.pdf
 
+### Raspberry Pi:
+https://pyimagesearch.com/2016/03/28/measuring-size-of-objects-in-an-image-with-opencv/
+https://www.youtube.com/watch?v=oue8t-Vzujw
+
+# Servos
+Lab 5 Materials
+https://hitecrcd.com/products/servos/sport-servos/digital-sport-servos/hs-5485hb-standard-karbonite-digital-servo/product
+
 ### VGA Projection:
 https://www.youtube.com/watch?v=mR-eo7a4n5Q
 https://github.com/dominic-meads/Quartus-Projects/tree/main/VGA_face
