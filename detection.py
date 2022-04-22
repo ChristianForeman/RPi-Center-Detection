@@ -11,8 +11,9 @@ import imutils
 #Globals:
 camera = PiCamera()
 
-# TODO: Tune these values to be more precise
-boundary = ([0,0,100], [75,75,225])
+# Tune these values to be more precise
+boundary = ([35,35,140], [100,100,225])
+hsv_boundary = ([140,25,0], [179,255,255]) # Currently using this one
 
 # Set up the UART port
 ser = serial.Serial(
@@ -37,11 +38,18 @@ def detectImg(image, detectionPath, midpointPath):
     lower = np.array(boundary[0], dtype="uint8")
     upper = np.array(boundary[1], dtype="uint8")
 
-    # select pixels that are in the boundary
-    mask = cv2.inRange(image, lower, upper)
-    output = cv2.bitwise_and(image, image, mask=mask)
+    lower_hsv = np.array(hsv_boundary[0], dtype="uint8")
+    upper_hsv = np.array(hsv_boundary[1], dtype="uint8")
 
-    cv2.imwrite(detectionPath, np.hstack([image,output]))
+    result = image.copy()
+    converted = image.copy()
+    converted = cv2.cvtColor(converted, cv2.COLOR_BGR2HSV)
+    # select pixels that are in the boundary
+    mask = cv2.inRange(converted, lower_hsv, upper_hsv)
+    result = cv2.bitwise_and(result, result, mask=mask)
+
+    cv2.imwrite(detectionPath, np.hstack([image,result]))
+    cv2.imwrite("currentDetection.jpg", np.hstack([image,result]))
 
     cnts = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     cnts = imutils.grab_contours(cnts)
@@ -53,7 +61,7 @@ def detectImg(image, detectionPath, midpointPath):
     totalContours = 0
 
     for c in cnts:
-        if cv2.contourArea(c) < 100:
+        if cv2.contourArea(c) < 500:
             continue
         
         # orig = image.copy()
@@ -80,6 +88,8 @@ def detectImg(image, detectionPath, midpointPath):
 
     total_x = total_x / 4
     total_y = total_y / 4
+
+    print("Found", totalContours, "contours")
 
     success = True
     # If there are not 4 contours, we did not detect 4 corners
@@ -111,10 +121,11 @@ def main():
 
     msg = None
 
-    for x in range(25):
+    # Make range longer to last longer
+    for i in range(100):
         print("taking photo", str(x))
         image = takePhoto()
-        imgName = "img" + str(x) + ".jpg"
+        imgName = "img" + str(i % 100) + ".jpg"
         success, offset_x, offset_y = detectImg(image, "detections/" + imgName, "midpoints/" + imgName)
 
         if success == True:
@@ -140,24 +151,16 @@ def main():
             msg = msg + "0" * (3 - len(offset_string))
             msg = msg + offset_string
 
-            print("photo", x, "is sending", msg)
+            print("photo", i, "is sending", msg)
             uart_to_nucleo(msg)
         else:
             print("No image detected, not sending a message via UART")
 
-        sleep(1)
+        sleep(0.1)
     
     camera.close()
 
     print("Main is terminating")
-
-def test():
-    print("Test up")
-
-    image = cv2.imread("testingImages/img0.jpg")
-    detectImg(image, "img0.jpg")
-    
-    print("Test is terminating")
 
 
 if __name__ == "__main__":
