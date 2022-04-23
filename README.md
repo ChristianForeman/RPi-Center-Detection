@@ -113,34 +113,38 @@ We had code blocks that were used to help us at the start of the project, but we
 In addition to the STM32 data sheets and our EECS 373 lab documents, we referenced these resources as well. 
 
 ### Materials used:
-https://docs.google.com/spreadsheets/d/1BM6z1we4ULig2K3vdXIlRVfSoMTgGnRhy5ityknNGfo/edit#gid=0
+***
+[Ordering Materials Spreadsheet](https://docs.google.com/spreadsheets/d/1BM6z1we4ULig2K3vdXIlRVfSoMTgGnRhy5ityknNGfo/edit#gid=0)
 
-### LCD module:
-https://www.youtube.com/watch?v=7mQppaEJjT4&t=220s
-https://controllerstech.com/i2c-lcd-in-stm32/
-https://us.beta-layout.com/download/rk/RK-10290_410.pdf
-https://cdn-shop.adafruit.com/datasheets/TC2004A-01.pdf
+### WayinTop 20x4 2004 LCD Display Module:
+***
+[Tutorial Video: LCD Module Initialization](https://www.youtube.com/watch?v=7mQppaEJjT4&t=220s)
+[Tutorial Website: LCD Module Functions](https://controllerstech.com/i2c-lcd-in-stm32/)
+[Datasheet #1](https://us.beta-layout.com/download/rk/RK-10290_410.pdf)
+[Datasheet #2](https://cdn-shop.adafruit.com/datasheets/TC2004A-01.pdf)
 
-### Raspberry Pi:
-https://pyimagesearch.com/2016/03/28/measuring-size-of-objects-in-an-image-with-opencv/
-https://www.youtube.com/watch?v=oue8t-Vzujw
+### Raspberry Pi 4B + Raspberry Pi Camera:
+***
+* [Tutorial Website: Color Detection](https://pyimagesearch.com/2016/03/28/measuring-size-of-objects-in-an-image-with-opencv/)
+* [Tutorial Video: Raspberry Pi to STM32 with UART](https://www.youtube.com/watch?v=oue8t-Vzujw)
 
-### Servos
-Lab 5 Materials
-https://hitecrcd.com/products/servos/sport-servos/digital-sport-servos/hs-5485hb-standard-karbonite-digital-servo/product
+### HS5485HB Servos
+***
+* [Datasheet](https://hitecrcd.com/products/servos/sport-servos/digital-sport-servos/hs-5485hb-standard-karbonite-digital-servo/product)
 
-### VGA Projection:
-https://www.youtube.com/watch?v=mR-eo7a4n5Q
-https://github.com/dominic-meads/Quartus-Projects/tree/main/VGA_face
-https://www.fpga4fun.com/PongGame.html
-https://www.intel.com/content/www/us/en/404.html?ref=https://www.intel.com/content/dam/www/programmable/us/en/portal/dsn/42/doc-us-dsnbk-42-1404062209-de2-115-user-manual.pdf
+### DE2 FPGA:
+***
+[Tutorial Video: Smiley Face](https://www.youtube.com/watch?v=mR-eo7a4n5Q)
+[GitHub: Smiley Face](https://github.com/dominic-meads/Quartus-Projects/tree/main/VGA_face)
+[VGA on FPGA](https://www.fpga4fun.com/PongGame.html)
+[Datasheet](https://www.intel.com/content/www/us/en/404.html?ref=https://www.intel.com/content/dam/www/programmable/us/en/portal/dsn/42/doc-us-dsnbk-42-1404062209-de2-115-user-manual.pdf)
 
 ### HiLetgo MPU6050 (IMU)
 ***
 * [Datasheet](https://invensense.tdk.com/wp-content/uploads/2015/02/MPU-6000-Datasheet1.pdf)
 * [Register Map](https://invensense.tdk.com/wp-content/uploads/2015/02/MPU-6000-Register-Map1.pdf)
-* [Tutorial Video](https://www.youtube.com/watch?v=xxphp9wDnHA)
-* [Tutorial Website](https://mschoeffler.com/2017/10/05/tutorial-how-to-use-the-gy-521-module-mpu-6050-breakout-board-with-the-arduino-uno/)
+* [Tutorial Video: IMU Initialization](https://www.youtube.com/watch?v=xxphp9wDnHA)
+* [Tutorial Website: IMU Initialization](https://mschoeffler.com/2017/10/05/tutorial-how-to-use-the-gy-521-module-mpu-6050-breakout-board-with-the-arduino-uno/)
 * [Hal I2C Library Documentation](https://deepbluembedded.com/stm32-i2c-tutorial-hal-examples-slave-dma/)
 
 ### Pololu VL53L1X Time-of-Flight LiDAR Sensor
