@@ -6,7 +6,7 @@
 Configure TIM4 on the nucleo. Set channel 3 and 4 to be PWM generation.
 Initialize the ARR value to 3999, Prescalar to 19, and initial pulse width to 320 for channel 3, and 250 for channel 4. This means PD14 is for channel 3 and PD15 is for channel 4. We use channel 3 for the top servo and channel 4 for the rotational servo.
 
-### Setting up UART for Raspberry Pi 4 Communication
+### Setting up UART for Raspberry Pi 4 Model B Communication
 To configure UART from RPI to Nucleo. Configure USART2 to be asynchronous, baudrate to 9600, word length 8, 1 stop bit, no parity. PD6 should be default configured to receive UART commands. Also, under the NVIC Settings Tab, make sure to enable USART2 as a global interrupt so whenever UART messages are sent, it triggers an interrupt on the STM.
 
 ### Setting up I2C for HiLetgo MPU6050 Communication
@@ -41,7 +41,7 @@ Right-click on the project name and click on "Properties." Expand "C/C++ Build" 
 
 See [this printf tutorial](https://docs.google.com/document/d/1wHqY2mj5vSRLN-8riEKG_4z_IsbV6kCAaLI3gJkkE8w/edit) for more details.
 
-### Connecting the Raspberry Pi 4
+### Connecting the Raspberry Pi 4 Model B
 Make sure to connect ground between STM and RPi. Connect pin 8 (UART0_TXD) to PD6 on the nucleo.
 
 ### Connecting the HiLetgo MPU6050
@@ -123,7 +123,7 @@ In addition to the STM32 data sheets and our EECS 373 lab documents, we referenc
 * [Datasheet #1](https://us.beta-layout.com/download/rk/RK-10290_410.pdf)
 * [Datasheet #2](https://cdn-shop.adafruit.com/datasheets/TC2004A-01.pdf)
 
-### Raspberry Pi 4B + Raspberry Pi Camera:
+### Raspberry Pi 4 Model B + Raspberry Pi Camera:
 ***
 * [Tutorial Website: Color Detection](https://pyimagesearch.com/2016/03/28/measuring-size-of-objects-in-an-image-with-opencv/)
 * [Tutorial Video: Raspberry Pi to STM32 with UART](https://www.youtube.com/watch?v=oue8t-Vzujw)
