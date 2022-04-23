@@ -114,14 +114,14 @@ In addition to the STM32 data sheets and our EECS 373 lab documents, we referenc
 
 ### Materials used:
 ***
-[Ordering Materials Spreadsheet](https://docs.google.com/spreadsheets/d/1BM6z1we4ULig2K3vdXIlRVfSoMTgGnRhy5ityknNGfo/edit#gid=0)
+* [Ordering Materials Spreadsheet](https://docs.google.com/spreadsheets/d/1BM6z1we4ULig2K3vdXIlRVfSoMTgGnRhy5ityknNGfo/edit#gid=0)
 
 ### WayinTop 20x4 2004 LCD Display Module:
 ***
-[Tutorial Video: LCD Module Initialization](https://www.youtube.com/watch?v=7mQppaEJjT4&t=220s)
-[Tutorial Website: LCD Module Functions](https://controllerstech.com/i2c-lcd-in-stm32/)
-[Datasheet #1](https://us.beta-layout.com/download/rk/RK-10290_410.pdf)
-[Datasheet #2](https://cdn-shop.adafruit.com/datasheets/TC2004A-01.pdf)
+* [Tutorial Video: LCD Module Initialization](https://www.youtube.com/watch?v=7mQppaEJjT4&t=220s)
+* [Tutorial Website: LCD Module Functions](https://controllerstech.com/i2c-lcd-in-stm32/)
+* [Datasheet #1](https://us.beta-layout.com/download/rk/RK-10290_410.pdf)
+* [Datasheet #2](https://cdn-shop.adafruit.com/datasheets/TC2004A-01.pdf)
 
 ### Raspberry Pi 4B + Raspberry Pi Camera:
 ***
@@ -134,10 +134,10 @@ In addition to the STM32 data sheets and our EECS 373 lab documents, we referenc
 
 ### DE2 FPGA:
 ***
-[Tutorial Video: Smiley Face](https://www.youtube.com/watch?v=mR-eo7a4n5Q)
-[GitHub: Smiley Face](https://github.com/dominic-meads/Quartus-Projects/tree/main/VGA_face)
-[VGA on FPGA](https://www.fpga4fun.com/PongGame.html)
-[Datasheet](https://www.intel.com/content/www/us/en/404.html?ref=https://www.intel.com/content/dam/www/programmable/us/en/portal/dsn/42/doc-us-dsnbk-42-1404062209-de2-115-user-manual.pdf)
+* [Tutorial Video: Smiley Face](https://www.youtube.com/watch?v=mR-eo7a4n5Q)
+* [GitHub: Smiley Face](https://github.com/dominic-meads/Quartus-Projects/tree/main/VGA_face)
+* [VGA on FPGA](https://www.fpga4fun.com/PongGame.html)
+* [Datasheet](https://www.intel.com/content/www/us/en/404.html?ref=https://www.intel.com/content/dam/www/programmable/us/en/portal/dsn/42/doc-us-dsnbk-42-1404062209-de2-115-user-manual.pdf)
 
 ### HiLetgo MPU6050 (IMU)
 ***
